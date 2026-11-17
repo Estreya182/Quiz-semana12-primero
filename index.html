@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interactivo: Primeros Pasos en Code.org - Colegio Hampton</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hampton: {
+              green: '#1a6b38', /* Verde del escudo */
+              navy: '#262958',  /* Azul marino del castillo */
+              gold: '#c49a37',  /* Dorado de las hojas */
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-gradient {
+      /* Gradiente elegante con los colores del Colegio Hampton */
+      background: linear-gradient(135deg, #1a6b38 0%, #0f4021 50%, #262958 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between antialiased">
+
+  <!-- Header con estética del Colegio -->
+  <header class="custom-gradient text-white py-8 px-4 shadow-lg border-b border-hampton-gold/30">
+    <div class="max-w-3xl mx-auto text-center space-y-2">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs font-semibold uppercase tracking-wider text-white">
+        <i class="fa-solid fa-gamepad text-hampton-gold"></i> Informática 1º Secundaria
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow">
+        Quiz: Primeros Pasos en Code.org
+      </h1>
+      <p class="text-sm sm:text-base text-gray-200 max-w-xl mx-auto">
+        Colegio Hampton - Comprueba tus conocimientos sobre la interfaz, lectura secuencial y variables en Game Lab.
+      </p>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="flex-grow max-w-3xl w-full mx-auto p-4 sm:p-6 my-4">
+
+    <!-- 1. PANTALLA DE INICIO CON EL INPUT DEL NOMBRE -->
+    <div id="start-card" class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200/80 transition-all">
+      <div class="text-center mb-6">
+        <!-- Logo del Colegio Hampton -->
+        <img src="image_97a47c.png" alt="Colegio Hampton" class="w-28 h-28 mx-auto mb-4 object-contain drop-shadow-md">
+        
+        <h2 class="text-xl sm:text-2xl font-bold text-hampton-navy">Bienvenido a la Evaluación</h2>
+        <p class="text-slate-500 text-sm mt-1">Escribe tu nombre antes de comenzar las 10 preguntas prácticas.</p>
+      </div>
+
+      <div class="space-y-4 max-w-md mx-auto">
+        <div>
+          <label for="student-name" class="block text-sm font-semibold text-hampton-navy mb-1.5">
+            Nombre completo del alumno:
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <!-- INPUT DONDE COLOCAN SU NOMBRE -->
+            <input type="text" id="student-name" placeholder="Ej. Juan Garcia"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-hampton-green focus:border-transparent transition-all">
+          </div>
+          <p id="name-error" class="text-xs text-rose-500 mt-1 hidden">Por favor ingresa tu nombre para continuar.</p>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 flex gap-2.5 items-start">
+          <i class="fa-solid fa-circle-info text-blue-500 text-base mt-0.5"></i>
+          <div>
+            <strong>Instrucciones:</strong> Responde cada pregunta basándote en lo que descubrimos hoy en nuestra práctica de Code.org. Al seleccionar tu opción recibirás retroalimentación inmediata.
+          </div>
+        </div>
+
+        <button id="btn-start" class="w-full py-3 px-6 bg-hampton-green hover:bg-[#124d27] active:scale-[0.99] text-white font-bold rounded-xl shadow-md shadow-green-900/30 transition-all flex items-center justify-center gap-2">
+          <span>Comenzar Quiz</span>
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- PANTALLA DEL QUIZ -->
+    <div id="quiz-card" class="hidden bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200/80 transition-all">
+      
+      <!-- Barra superior de estado -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold text-hampton-green uppercase tracking-wider">Alumno(a):</span>
+          <span id="display-student-name" class="text-xs font-semibold text-slate-700 ml-1">---</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">
+            Puntaje: <span id="current-score" class="text-hampton-green font-extrabold">0</span> / 100
+          </span>
+          <span id="question-indicator" class="text-xs font-bold text-slate-400">Pregunta 1 de 10</span>
+        </div>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden my-4">
+        <div id="progress-bar" class="bg-hampton-green h-full w-[10%] transition-all duration-300 ease-out"></div>
+      </div>
+
+      <!-- Pregunta Actual -->
+      <div class="my-5">
+        <span id="question-phase-badge" class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-50 text-hampton-green border border-green-200 mb-2">
+          Fase 1
+        </span>
+        <h3 id="question-text" class="text-lg sm:text-xl font-bold text-hampton-navy leading-snug">
+          Cargando pregunta...
+        </h3>
+      </div>
+
+      <!-- Opciones de Respuesta -->
+      <div id="options-container" class="space-y-3">
+        <!-- Opciones generadas dinámicamente -->
+      </div>
+
+      <!-- Tarjeta de Retroalimentación / Explicación -->
+      <div id="feedback-card" class="hidden mt-6 p-4 rounded-xl border text-sm transition-all duration-200">
+        <div class="flex items-center gap-2 font-bold mb-1" id="feedback-header">
+          <i id="feedback-icon" class="fa-solid fa-circle-check"></i>
+          <span id="feedback-title">¡Correcto!</span>
+        </div>
+        <p id="feedback-text" class="text-slate-700 leading-relaxed text-xs sm:text-sm">
+          Explicación técnica...
+        </p>
+      </div>
+
+      <!-- Botón Siguiente Pregunta -->
+      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+        <button id="btn-next" disabled class="py-2.5 px-6 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed transition-all flex items-center gap-2">
+          <span>Siguiente</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 2. PANTALLA DE RESULTADOS FINALES -->
+    <div id="result-card" class="hidden bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200/80 text-center transition-all">
+      <div class="max-w-md mx-auto space-y-4">
+        
+        <div id="result-badge-icon" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl shadow-md">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+
+        <h2 class="text-lg font-bold text-slate-500 uppercase tracking-wide">Resultados Finales</h2>
+        
+        <!-- AQUÍ APARECE EL NOMBRE Y PUNTAJE (Ej: Juan Garcia 100 puntos) -->
+        <h1 id="final-student-score" class="text-2xl sm:text-4xl font-extrabold text-hampton-navy">
+          Cargando...
+        </h1>
+
+        <!-- Mensaje Personalizado -->
+        <div id="result-message-box" class="mt-4 p-4 rounded-xl text-xs sm:text-sm leading-relaxed">
+          Mensaje evaluativo...
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="pt-6 flex flex-col sm:flex-row gap-3">
+          <button id="btn-restart" class="flex-1 py-3 px-5 bg-hampton-green hover:bg-[#124d27] active:scale-95 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Reintentar Quiz</span>
+          </button>
+          <button onclick="window.print()" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-hampton-navy font-semibold rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i>
+            <span>Imprimir Resultado</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-xs text-slate-500 font-medium">
+    Colegio Hampton • Laboratorio de Informática • Práctica: Primeros Pasos en Code.org
+  </footer>
+
+  <!-- Lógica Interactiva en JavaScript -->
+  <script>
+    const questions = [
+      {
+        phase: "Lectura del Código",
+        question: "¿Cómo lee la computadora las instrucciones de nuestro código en Game Lab?",
+        options: [
+          "De arriba hacia abajo, línea por línea",
+          "De abajo hacia arriba",
+          "De derecha a izquierda",
+          "Las lee todas al mismo tiempo"
+        ],
+        correct: 0,
+        explanation: "La computadora ejecuta el código secuencialmente de arriba hacia abajo. Por eso, el orden importa mucho: lo que dibujes al final quedará encima de lo anterior."
+      },
+      {
+        phase: "Concepto de Variables",
+        question: "En programación, ¿qué es exactamente una variable?",
+        options: [
+          "Un error matemático en el código",
+          "Un espacio de memoria como una caja donde guardamos un dato",
+          "Un dibujo que aparece en la pantalla",
+          "Una parte de la Caja de Herramientas"
+        ],
+        correct: 1,
+        explanation: "Es un espacio en la memoria (como una caja) al que le ponemos una etiqueta (como 'paleta' o 'vidas') para guardar información que la computadora usará después."
+      },
+      {
+        phase: "Tipos de Datos",
+        question: "Si queremos guardar el mensaje 'Fin del juego' en una de nuestras cajas (variables), ¿qué tipo de dato estamos utilizando?",
+        options: [
+          "Número",
+          "Booleano",
+          "Texto",
+          "Coordenada"
+        ],
+        correct: 2,
+        explanation: "Guardamos palabras o mensajes en formato de Texto (strings). Los números se usan para puntajes o coordenadas."
+      },
+      {
+        phase: "Tipos de Datos",
+        question: "Si necesitamos que el juego lleve la cuenta de las vidas que le quedan al jugador, ¿qué tipo de dato usaremos?",
+        options: [
+          "Número",
+          "Texto",
+          "Booleano",
+          "Sprite"
+        ],
+        correct: 0,
+        explanation: "Necesitamos un dato tipo Número para poder sumarle o restarle vidas matemáticamente durante el juego."
+      },
+      {
+        phase: "El Bloque Draw",
+        question: "¿Cuál es la tarea principal del bloque verde llamado 'function draw()'?",
+        options: [
+          "Dibujar el fondo una sola vez y detenerse",
+          "Crear las variables del jugador al inicio",
+          "Borrar todo el código de la pantalla",
+          "Repetir las instrucciones que tiene adentro muchas veces por segundo"
+        ],
+        correct: 3,
+        explanation: "La función draw() es el corazón del juego; es un ciclo continuo que dibuja fotogramas a gran velocidad para crear la ilusión de movimiento."
+      },
+      {
+        phase: "Declaración de Objetos",
+        question: "¿En qué parte exacta del código debemos colocar la creación inicial de nuestra paleta (var paleta = createSprite...)?",
+        options: [
+          "Adentro del function draw()",
+          "Afuera y arriba del function draw()",
+          "Hasta el final de todo el código",
+          "En la pestaña de Animación"
+        ],
+        correct: 1,
+        explanation: "Solo necesitamos crear nuestro personaje una vez al inicio del juego. Si lo ponemos adentro del draw(), ¡crearíamos un sprite nuevo 30 veces por segundo!"
+      },
+      {
+        phase: "Fondos",
+        question: "¿Qué bloque usamos de la Caja de Herramientas para pintar el universo (el fondo) de nuestro juego?",
+        options: [
+          "drawSprites()",
+          "background()",
+          "createSprite()",
+          "function draw()"
+        ],
+        correct: 1,
+        explanation: "El bloque background() pinta todo el lienzo del color que elijas, y es vital ponerlo al principio del draw() para borrar el rastro del fotograma anterior."
+      },
+      {
+        phase: "Dibujar Sprites",
+        question: "Aunque ya hayamos creado la variable de nuestra paleta, ¿qué bloque es indispensable usar para que el objeto realmente se pinte en la pantalla?",
+        options: [
+          "background()",
+          "var paleta",
+          "Ejecutar",
+          "drawSprites()"
+        ],
+        correct: 3,
+        explanation: "createSprite() solo crea la caja en la memoria de la computadora, pero necesitamos la instrucción drawSprites() para que se dibuje visualmente en la pantalla."
+      },
+      {
+        phase: "Orden de los bloques",
+        question: "¿Por qué es crucial colocar el bloque 'drawSprites()' siempre DEBAJO de 'background()'?",
+        options: [
+          "Porque si el fondo se pinta al último, tapará a los personajes",
+          "Porque background marca error si va primero",
+          "Para que la computadora vaya más rápido",
+          "El orden de los bloques no importa"
+        ],
+        correct: 0,
+        explanation: "Como el código se lee de arriba hacia abajo, lo último que le ordenes dibujar quedará hasta enfrente. Primero pintamos el fondo, y encima dibujamos a los personajes."
+      },
+      {
+        phase: "Interfaz del Game Lab",
+        question: "Dentro de la pantalla principal de Code.org, ¿cómo se llama la zona izquierda donde vemos nuestro juego en acción?",
+        options: [
+          "Caja de Herramientas",
+          "Espacio de Trabajo",
+          "Área de Juego",
+          "Consola de Errores"
+        ],
+        correct: 2,
+        explanation: "Es el Área de Juego (o simulador). La Caja de Herramientas es donde están los bloques, y el Espacio de Trabajo es la zona derecha donde los conectamos."
+      }
+    ];
+
+    // Variables de Estado
+    let currentQuestionIndex = 0;
+    let score = 0; // Aciertos
+    let studentName = "";
+    let answered = false;
+
+    // Elementos del DOM
+    const startCard = document.getElementById("start-card");
+    const quizCard = document.getElementById("quiz-card");
+    const resultCard = document.getElementById("result-card");
+
+    const studentNameInput = document.getElementById("student-name");
+    const nameError = document.getElementById("name-error");
+    const btnStart = document.getElementById("btn-start");
+
+    const displayStudentName = document.getElementById("display-student-name");
+    const currentScoreEl = document.getElementById("current-score");
+    const questionIndicator = document.getElementById("question-indicator");
+    const progressBar = document.getElementById("progress-bar");
+    const questionPhaseBadge = document.getElementById("question-phase-badge");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+
+    const feedbackCard = document.getElementById("feedback-card");
+    const feedbackHeader = document.getElementById("feedback-header");
+    const feedbackIcon = document.getElementById("feedback-icon");
+    const feedbackTitle = document.getElementById("feedback-title");
+    const feedbackText = document.getElementById("feedback-text");
+    const btnNext = document.getElementById("btn-next");
+
+    const finalStudentScore = document.getElementById("final-student-score");
+    const resultMessageBox = document.getElementById("result-message-box");
+    const resultBadgeIcon = document.getElementById("result-badge-icon");
+    const btnRestart = document.getElementById("btn-restart");
+
+    // Iniciar Quiz
+    btnStart.addEventListener("click", () => {
+      const name = studentNameInput.value.trim();
+      if (!name) {
+        nameError.classList.remove("hidden");
+        studentNameInput.focus();
+        return;
+      }
+      nameError.classList.add("hidden");
+      studentName = name; // Aquí se guarda el nombre que escribe el alumno
+      displayStudentName.textContent = studentName;
+
+      startCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      currentQuestionIndex = 0;
+      score = 0;
+      loadQuestion();
+    });
+
+    // Cargar Pregunta
+    function loadQuestion() {
+      answered = false;
+      const q = questions[currentQuestionIndex];
+
+      // Actualizar estado superior (Cada acierto son 10 puntos)
+      questionIndicator.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+      currentScoreEl.textContent = score * 10;
+      questionPhaseBadge.textContent = q.phase;
+      questionText.textContent = q.question;
+
+      // Barra de progreso
+      const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Ocultar feedback y deshabilitar botón siguiente
+      feedbackCard.classList.add("hidden");
+      btnNext.disabled = true;
+      btnNext.className = "py-2.5 px-6 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed transition-all flex items-center gap-2";
+
+      // Renderizar opciones
+      optionsContainer.innerHTML = "";
+      
+      // Mapear opciones con índice original para validación correcta
+      let mappedOptions = q.options.map((opt, index) => ({ text: opt, originalIndex: index }));
+      
+      // Aleatorizar visualmente
+      let shuffledOptions = mappedOptions.sort(() => Math.random() - 0.5);
+
+      shuffledOptions.forEach((optObj, visualIndex) => {
+        const optionBtn = document.createElement("button");
+        optionBtn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border border-slate-200 hover:border-hampton-green hover:bg-green-50/50 bg-white font-medium text-slate-700 text-xs sm:text-sm flex items-start gap-3 transition-all duration-150 group";
+        
+        // Letra A, B, C, D
+        const letterBadge = document.createElement("span");
+        letterBadge.className = "w-6 h-6 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-hampton-green group-hover:text-white flex items-center justify-center text-xs font-bold shrink-0 transition-colors";
+        letterBadge.textContent = String.fromCharCode(65 + visualIndex);
+
+        const optionTextSpan = document.createElement("span");
+        optionTextSpan.className = "flex-1 mt-0.5";
+        optionTextSpan.textContent = optObj.text;
+
+        optionBtn.appendChild(letterBadge);
+        optionBtn.appendChild(optionTextSpan);
+
+        optionBtn.addEventListener("click", () => handleSelectOption(optObj.originalIndex, optionBtn));
+        optionsContainer.appendChild(optionBtn);
+      });
+    }
+
+    // Manejar selección de opción
+    function handleSelectOption(selectedOriginalIndex, selectedButton) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestionIndex];
+      const optionButtons = optionsContainer.querySelectorAll("button");
+      const isCorrect = selectedOriginalIndex === q.correct;
+
+      if (isCorrect) {
+        score++;
+        currentScoreEl.textContent = score * 10;
+      }
+
+      // Estilizar botones de opciones
+      optionButtons.forEach((btn) => {
+        btn.disabled = true;
+        btn.classList.remove("hover:border-hampton-green", "hover:bg-green-50/50", "group");
+        
+        const badge = btn.querySelector("span:first-child");
+        const btnText = btn.querySelector("span:last-child").textContent;
+
+        if (btnText === q.options[q.correct]) {
+          btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold text-xs sm:text-sm flex items-start gap-3 transition-all";
+          badge.className = "w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0";
+          badge.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else if (btn === selectedButton && !isCorrect) {
+          btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-900 font-semibold text-xs sm:text-sm flex items-start gap-3 transition-all";
+          badge.className = "w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-bold shrink-0";
+          badge.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        } else {
+          btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-normal text-xs sm:text-sm flex items-start gap-3 opacity-60";
+        }
+      });
+
+      // Mostrar Feedback
+      feedbackCard.classList.remove("hidden", "bg-emerald-50", "border-emerald-200", "text-emerald-900", "bg-rose-50", "border-rose-200", "text-rose-900");
+      
+      if (isCorrect) {
+        feedbackCard.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-900");
+        feedbackHeader.className = "flex items-center gap-2 font-bold mb-1 text-emerald-700";
+        feedbackIcon.className = "fa-solid fa-circle-check text-emerald-600 text-base";
+        feedbackTitle.textContent = "¡Respuesta Correcta!";
+      } else {
+        feedbackCard.classList.add("bg-rose-50", "border-rose-200", "text-rose-900");
+        feedbackHeader.className = "flex items-center gap-2 font-bold mb-1 text-rose-700";
+        feedbackIcon.className = "fa-solid fa-circle-xmark text-rose-600 text-base";
+        feedbackTitle.textContent = "Respuesta Incorrecta";
+      }
+
+      feedbackText.textContent = q.explanation;
+
+      // Habilitar botón siguiente
+      btnNext.disabled = false;
+      btnNext.className = "py-2.5 px-6 rounded-xl font-bold text-sm bg-hampton-green hover:bg-[#124d27] text-white shadow-md shadow-green-900/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer";
+      
+      if (currentQuestionIndex === questions.length - 1) {
+        btnNext.innerHTML = '<span>Ver Calificación</span> <i class="fa-solid fa-trophy text-xs"></i>';
+      } else {
+        btnNext.innerHTML = '<span>Siguiente</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+      }
+    }
+
+    // Botón Siguiente
+    btnNext.addEventListener("click", () => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    // Mostrar Resultados
+    function showResults() {
+      quizCard.classList.add("hidden");
+      resultCard.classList.remove("hidden");
+
+      const totalPuntos = score * 10;
+      
+      // AQUÍ SE IMPRIME EL FORMATO "NOMBRE 100 PUNTOS"
+      finalStudentScore.textContent = `${studentName} ${totalPuntos} puntos`;
+
+      if (totalPuntos >= 80) {
+        resultBadgeIcon.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl shadow-md bg-emerald-100 text-emerald-600";
+        resultBadgeIcon.innerHTML = '<i class="fa-solid fa-award"></i>';
+        resultMessageBox.className = "p-4 rounded-xl text-xs sm:text-sm leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-900";
+        resultMessageBox.innerHTML = `<strong>¡Excelente trabajo!</strong> Has demostrado comprender perfectamente cómo funciona el código, las variables y la interfaz. ¡Estás listo para programar el movimiento en la siguiente clase del Colegio Hampton!`;
+
+        // Confetti de celebración
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#1a6b38', '#262958', '#c49a37'] // Confetti con colores del colegio
+        });
+      } else if (totalPuntos >= 60) {
+        resultBadgeIcon.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl shadow-md bg-amber-100 text-amber-600";
+        resultBadgeIcon.innerHTML = '<i class="fa-solid fa-star-half-stroke"></i>';
+        resultMessageBox.className = "p-4 rounded-xl text-xs sm:text-sm leading-relaxed bg-amber-50 border border-amber-200 text-amber-900";
+        resultMessageBox.innerHTML = `<strong>¡Buen comienzo!</strong> Tienes las bases listas, pero asegúrate de recordar el orden de lectura de la computadora (de arriba hacia abajo) para la próxima sesión.`;
+      } else {
+        resultBadgeIcon.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl shadow-md bg-rose-100 text-rose-600";
+        resultBadgeIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        resultMessageBox.className = "p-4 rounded-xl text-xs sm:text-sm leading-relaxed bg-rose-50 border border-rose-200 text-rose-900";
+        resultMessageBox.innerHTML = `<strong>Sigue practicando:</strong> Repasa dónde se declaran las variables (afuera del draw) y cómo funciona el bloque background(). ¡Vuelve a intentarlo!`;
+      }
+    }
+
+    // Reiniciar Quiz
+    btnRestart.addEventListener("click", () => {
+      resultCard.classList.add("hidden");
+      startCard.classList.remove("hidden");
+      studentNameInput.value = "";
+    });
+  </script>
+</body>
+</html>
